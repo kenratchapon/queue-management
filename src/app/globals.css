@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/* FullCalendar Dark Theme */
+.dark-theme .fc {
+  --fc-border-color: rgba(255, 255, 255, 0.1);
+  --fc-button-text-color: #fff;
+  --fc-button-bg-color: rgba(59, 130, 246, 0.5);
+  --fc-button-border-color: rgba(59, 130, 246, 0.3);
+  --fc-button-hover-bg-color: rgba(59, 130, 246, 0.7);
+  --fc-button-hover-border-color: rgba(59, 130, 246, 0.5);
+  --fc-button-active-bg-color: rgba(59, 130, 246, 0.9);
+  --fc-button-active-border-color: rgba(59, 130, 246, 0.7);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.05);
+  --fc-neutral-text-color: #fff;
+  --fc-today-bg-color: rgba(59, 130, 246, 0.1);
+}
+
+.dark-theme .fc-theme-standard td,
+.dark-theme .fc-theme-standard th {
+  border-color: var(--fc-border-color);
+}
+
+.dark-theme .fc-timegrid-slot-label,
+.dark-theme .fc-timegrid-axis-cushion,
+.dark-theme .fc-col-header-cell-cushion {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark-theme .fc-timegrid-now-indicator-line {
+  border-color: #ef4444;
+}
+
+.dark-theme .fc-timegrid-now-indicator-arrow {
+  border-color: #ef4444;
+}
+
+.dark-theme .fc-event {
+  backdrop-filter: blur(4px);
+}
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 17, 24, 39;
+  --background-end-rgb: 17, 24, 39;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
+  );
+}
+
+/* Custom Scrollbar */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 1);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 1);
+  }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Input number spinner removal */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+/* Glass effect for cards */
+.glass-effect {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ปรับแต่ง FullCalendar สำหรับ dark theme */
+.calendar-container.dark-theme {
+  --fc-border-color: rgba(75, 85, 99, 0.3);
+  --fc-button-text-color: #fff;
+  --fc-button-bg-color: rgba(59, 130, 246, 0.5);
+  --fc-button-border-color: rgba(59, 130, 246, 0.3);
+  --fc-button-hover-bg-color: rgba(59, 130, 246, 0.7);
+  --fc-button-hover-border-color: rgba(59, 130, 246, 0.5);
+  --fc-button-active-bg-color: rgba(59, 130, 246, 0.9);
+  --fc-button-active-border-color: rgba(59, 130, 246, 0.7);
+  --fc-event-bg-color: rgba(59, 130, 246, 0.5);
+  --fc-event-border-color: rgba(59, 130, 246, 0.3);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(31, 41, 55, 0.5);
+  --fc-neutral-text-color: #fff;
+  --fc-today-bg-color: rgba(59, 130, 246, 0.1);
+}
+
+.calendar-container.dark-theme .fc-theme-standard td,
+.calendar-container.dark-theme .fc-theme-standard th {
+  border-color: var(--fc-border-color);
+}
+
+.calendar-container.dark-theme .fc-timegrid-slot-label,
+.calendar-container.dark-theme .fc-timegrid-axis-cushion,
+.calendar-container.dark-theme .fc-col-header-cell-cushion {
+  color: #9ca3af;
+}
+
+.calendar-container.dark-theme .fc-timegrid-now-indicator-line {
+  border-color: #ef4444;
+}
+
+.calendar-container.dark-theme .fc-timegrid-now-indicator-arrow {
+  border-color: #ef4444;
+  background-color: #ef4444;
+}
