@@ -1,7 +1,7 @@
 
 export const metadata = {
-    title: 'สถานะเครื่องซักผ้า',
-    description: 'ดูสถานะเครื่องซักผ้าและคิวปัจจุบัน',
+    title: 'เช็คคิว cloud gaming',
+    description: 'ดูสถานะ cloud ทั้งหมด',
   }
   
   export default function CustomerLayout({ children }) {

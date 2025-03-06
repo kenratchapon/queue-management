@@ -1,160 +1,198 @@
 "use client"
 import React, { useState } from 'react';
-import { firebaseService } from '../services/firebaseService';
+import { addCustomerToQueue } from '../services/firebaseService';
 
-const AddCustomer = () => {
-  const [customerName, setCustomerName] = useState('');
+const AddCustomer = ({ onAddCustomer }) => {
+  const [name, setName] = useState('');
   const [contact, setContact] = useState('');
-  const [duration, setDuration] = useState({
-    hours: 0,
-    minutes: 0,
-    seconds: 0
-  });
+  const [type, setType] = useState('general');
+  const [preferredMachineType, setPreferredMachineType] = useState('');
+  const [hours, setHours] = useState(1);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!customerName.trim()) {
+    if (!name) {
       alert('กรุณากรอกชื่อลูกค้า');
       return;
     }
 
-    if (!contact.trim()) {
-      alert('กรุณากรอกข้อมูลติดต่อ');
+    if (!contact) {
+      alert('กรุณากรอกข้อมูลติดต่อลูกค้า');
       return;
     }
-
-    // คำนวณ duration เป็นชั่วโมง
-    const totalHours = 
-      Number(duration.hours) + 
-      (Number(duration.minutes) / 60) + 
-      (Number(duration.seconds) / 3600);
-
-    if (totalHours <= 0) {
-      alert('กรุณาระบุระยะเวลา');
-      return;
-    }
-
+    
+    setIsSubmitting(true);
+    
     try {
+      // คำนวณเวลาเป็นชั่วโมง
+      const duration = parseFloat(hours) + (parseFloat(minutes) / 60) + (parseFloat(seconds) / 3600);
+      
+      // สร้างข้อมูลลูกค้า
       const customerData = {
-        name: customerName.trim(),
-        contact: contact.trim(),
-        duration: totalHours,
+        name,
+        contact,
+        type,
+        preferredMachineType,
+        status: 'waiting',
+        duration,
         durationDetails: {
-          hours: Number(duration.hours),
-          minutes: Number(duration.minutes),
-          seconds: Number(duration.seconds)
+          hours: parseFloat(hours),
+          minutes: parseFloat(minutes),
+          seconds: parseFloat(seconds)
         },
-        status: 'waiting'
+        createdAt: new Date()
       };
-
-      await firebaseService.addToQueue(customerData);
+      
+      await onAddCustomer(customerData);
       
       // รีเซ็ตฟอร์ม
-      setCustomerName('');
+      setName('');
       setContact('');
-      setDuration({ hours: 0, minutes: 0, seconds: 0 });
+      setType('general');
+      setPreferredMachineType('');
+      setHours(1);
+      setMinutes(0);
+      setSeconds(0);
       
-      alert('เพิ่มลูกค้าเรียบร้อย');
     } catch (error) {
       console.error('Error adding customer:', error);
       alert('เกิดข้อผิดพลาดในการเพิ่มลูกค้า');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl">
-      <h2 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-teal-500 bg-clip-text text-transparent mb-6">
+    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl mb-8">
+      <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent mb-6">
         เพิ่มลูกค้าใหม่
       </h2>
-
+      
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ชื่อลูกค้า */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            ชื่อลูกค้า
-          </label>
-          <input
-            type="text"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full p-3 bg-gray-800/50 border border-gray-500/30 rounded-xl
-                     text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            placeholder="ชื่อ-นามสกุล"
-          />
-        </div>
-
-        {/* ข้อมูลติดต่อ */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            ข้อมูลติดต่อ
-          </label>
-          <input
-            type="text"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            className="w-full p-3 bg-gray-800/50 border border-gray-500/30 rounded-xl
-                     text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            placeholder="เบอร์โทร หรือ ID Line"
-          />
-        </div>
-
-        {/* ระยะเวลา */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            ระยะเวลา
-          </label>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <input
-                type="number"
-                min="0"
-                value={duration.hours}
-                onChange={(e) => setDuration({ ...duration, hours: e.target.value })}
-                className="w-full p-3 bg-gray-800/50 border border-gray-500/30 rounded-xl
-                         text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="0"
-              />
-              <span className="text-sm text-gray-400 mt-1 block">ชั่วโมง</span>
-            </div>
-            <div>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={duration.minutes}
-                onChange={(e) => setDuration({ ...duration, minutes: e.target.value })}
-                className="w-full p-3 bg-gray-800/50 border border-gray-500/30 rounded-xl
-                         text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="0"
-              />
-              <span className="text-sm text-gray-400 mt-1 block">นาที</span>
-            </div>
-            <div>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={duration.seconds}
-                onChange={(e) => setDuration({ ...duration, seconds: e.target.value })}
-                className="w-full p-3 bg-gray-800/50 border border-gray-500/30 rounded-xl
-                         text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="0"
-              />
-              <span className="text-sm text-gray-400 mt-1 block">วินาที</span>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+              ชื่อลูกค้า <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="กรอกชื่อลูกค้า"
+              required
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="contact" className="block text-sm font-medium text-gray-300 mb-1">
+              ข้อมูลติดต่อ <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="contact"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="กรอกเบอร์โทรศัพท์หรืออีเมล"
+              required
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="type" className="block text-sm font-medium text-gray-300 mb-1">
+              ประเภทลูกค้า
+            </label>
+            <select
+              id="type"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="general">ทั่วไป</option>
+              <option value="premium">พรีเมียม</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="preferredMachineType" className="block text-sm font-medium text-gray-300 mb-1">
+              ประเภทเครื่องที่ต้องการ
+            </label>
+            <select
+              id="preferredMachineType"
+              value={preferredMachineType}
+              onChange={(e) => setPreferredMachineType(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">ไม่ระบุ</option>
+              <option value="geforce_now">GeForce Now</option>
+              <option value="boosteroid">Boosteroid</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-3">
+              ระยะเวลา
+            </label>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="hours" className="block text-xs text-gray-400 mb-1">ชั่วโมง</label>
+                <input
+                  id="hours"
+                  type="number"
+                  min="0"
+                  max="24"
+                  value={hours}
+                  onChange={(e) => setHours(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="minutes" className="block text-xs text-gray-400 mb-1">นาที</label>
+                <input
+                  id="minutes"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={minutes}
+                  onChange={(e) => setMinutes(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="seconds" className="block text-xs text-gray-400 mb-1">วินาที</label>
+                <input
+                  id="seconds"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={seconds}
+                  onChange={(e) => setSeconds(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
           </div>
         </div>
-
-        {/* ปุ่มบันทึก */}
+        
         <button
           type="submit"
-          className="w-full py-3 bg-gradient-to-r from-green-500 to-teal-500 
-                   hover:from-green-600 hover:to-teal-600 rounded-xl text-white
-                   font-semibold shadow-lg shadow-green-500/30 transition-all
-                   duration-200 transform hover:scale-[1.02]"
+          disabled={isSubmitting}
+          className={`w-full py-3 rounded-lg font-medium transition-all duration-200
+                    ${isSubmitting
+                      ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white'
+                    }`}
         >
-          เพิ่มลูกค้า
+          {isSubmitting ? 'กำลังเพิ่ม...' : 'เพิ่มลูกค้า'}
         </button>
       </form>
     </div>

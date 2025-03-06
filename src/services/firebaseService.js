@@ -170,24 +170,31 @@ export const firebaseService = {
     }
   },
 
-  async assignCustomerToMachine(customer, machineId, startTime, duration) {
+  async assignCustomerToMachine(machineId, customerId, startTime, duration = 1) {
     try {
-      const machineRef = doc(db, MACHINES_COLLECTION, machineId.toString());
+      const machineRef = doc(db, MACHINES_COLLECTION, machineId);
+      const customerRef = doc(db, QUEUE_COLLECTION, customerId);
+      
+      // อัปเดตสถานะเครื่อง
       await updateDoc(machineRef, {
         inUse: true,
-        currentCustomer: { 
-          ...customer, 
-          startTime, 
-          duration,
-          assignedAt: new Date().toISOString()
-        },
-        lastUpdated: new Date().toISOString()
+        currentCustomer: customerId,
+        startTime: startTime || serverTimestamp(),
+        duration: duration || 1, // ใช้ค่าเริ่มต้นหากไม่มีการส่งค่า
+        updatedAt: serverTimestamp()
       });
-
-      // Remove from queue after successful assignment
-      await deleteDoc(doc(db, QUEUE_COLLECTION, customer.id));
+      
+      // อัปเดตสถานะลูกค้า
+      await updateDoc(customerRef, {
+        status: 'in_progress',
+        assignedMachine: machineId,
+        startTime: startTime || serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      return true;
     } catch (error) {
-      console.error("Error assigning customer:", error);
+      console.error('Error assigning customer to machine:', error);
       throw error;
     }
   },
@@ -311,55 +318,32 @@ export const removeFromQueue = async (queueId) => {
   }
 };
 
-export const assignCustomerToMachine = async (machineId, customerId, queueData, machineData, startTime) => {
+export const assignCustomerToMachine = async (machineId, customerId, startTime, duration = 1) => {
   try {
-    const batch = writeBatch(db);
+    // เพิ่มค่าเริ่มต้นให้กับ duration
+    const machineRef = doc(db, MACHINES_COLLECTION, machineId);
+    const customerRef = doc(db, QUEUE_COLLECTION, customerId);
     
-    // แปลง startTime เป็น Firestore Timestamp
-    const firestoreStartTime = startTime ? Timestamp.fromDate(new Date(startTime)) : serverTimestamp();
-    
-    // สร้าง currentCustomer object โดยไม่รวมฟิลด์ที่เป็น undefined
-    const currentCustomer = {
-      id: customerId,
-      name: queueData.name || '',
-      contact: queueData.contact || '',
-      startTime: firestoreStartTime,
-      duration: queueData.duration || 0,
-      durationDetails: queueData.durationDetails || null
-    };
-
-    // เพิ่ม requestedTime เฉพาะเมื่อมีค่า
-    if (queueData.requestedTime) {
-      if (queueData.requestedTime instanceof Timestamp) {
-        currentCustomer.requestedTime = queueData.requestedTime;
-      } else if (queueData.requestedTime.toDate) {
-        currentCustomer.requestedTime = queueData.requestedTime;
-      } else {
-        currentCustomer.requestedTime = Timestamp.fromDate(new Date(queueData.requestedTime));
-      }
-    }
-
-    // อัพเดทสถานะเครื่อง
-    const machineRef = doc(db, 'machines', machineId);
-    batch.update(machineRef, {
+    // อัปเดตสถานะเครื่อง
+    await updateDoc(machineRef, {
       inUse: true,
-      currentCustomer: currentCustomer,
-      lastUpdated: serverTimestamp()
+      currentCustomer: customerId,
+      startTime: startTime || serverTimestamp(),
+      duration: duration || 1, // ใช้ค่าเริ่มต้นหากไม่มีการส่งค่า
+      updatedAt: serverTimestamp()
     });
-
-    // อัพเดทสถานะในคิว
-    const queueRef = doc(db, 'queue', customerId);
-    batch.update(queueRef, {
+    
+    // อัปเดตสถานะลูกค้า
+    await updateDoc(customerRef, {
       status: 'in_progress',
       assignedMachine: machineId,
-      startTime: firestoreStartTime,
-      lastUpdated: serverTimestamp()
+      startTime: startTime || serverTimestamp(),
+      updatedAt: serverTimestamp()
     });
-
-    await batch.commit();
+    
     return true;
   } catch (error) {
-    console.error('Error assigning customer:', error);
+    console.error('Error assigning customer to machine:', error);
     throw error;
   }
 };
@@ -429,4 +413,60 @@ export const subscribeQueue = (callback) => {
     }));
     callback(queue);
   });
+};
+
+// เพิ่มเครื่องใหม่
+export const addMachine = async (machineData) => {
+  try {
+    const machinesRef = collection(db, MACHINES_COLLECTION);
+    const docRef = await addDoc(machinesRef, {
+      ...machineData,
+      status: 'offline', // เริ่มต้นด้วยสถานะ offline
+      inUse: false,
+      currentCustomer: null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    return { id: docRef.id, ...machineData };
+  } catch (error) {
+    console.error('Error adding machine:', error);
+    throw error;
+  }
+};
+
+export const deleteMachine = async (machineId) => {
+  try {
+    const machineRef = doc(db, MACHINES_COLLECTION, machineId);
+    await deleteDoc(machineRef);
+    return true;
+  } catch (error) {
+    console.error('Error deleting machine:', error);
+    throw error;
+  }
+};
+
+// เพิ่มลูกค้าเข้าคิว
+export const addCustomerToQueue = async (customerData) => {
+  try {
+    // ป้องกันกรณี customerData เป็น undefined
+    if (!customerData) {
+      throw new Error("ข้อมูลลูกค้าไม่ถูกต้อง");
+    }
+    
+    // กำหนดค่า duration เริ่มต้นถ้าไม่มีค่า
+    const finalData = {
+      ...customerData,
+      duration: customerData.duration || 1,
+      status: 'waiting',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    const queueRef = collection(db, QUEUE_COLLECTION);
+    const docRef = await addDoc(queueRef, finalData);
+    return { id: docRef.id, ...finalData };
+  } catch (error) {
+    console.error('Error adding customer to queue:', error);
+    throw error;
+  }
 };

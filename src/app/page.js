@@ -2,7 +2,6 @@
 import "./globals.css";
 import QueueList from '@components/QueueList';
 import AddCustomer from '../components/AddCustomer';
-import AssignMachine from '@components/AssignMachine';
 import MachineStatus from '../components/MachineStatus';
 import MachineCalendar from '@components/MachineCalendar';
 import { useState, useEffect, useCallback } from 'react';
@@ -27,11 +26,15 @@ import {
   getQueue,
   updateMachineStatus,
   assignCustomerToMachine,
-  resetMachine
+  resetMachine,
+  addCustomerToQueue
 } from '../services/firebaseService';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
 import useMachineStore from '../store/machineStore';
+import MachineManagement from '../components/MachineManagement';
+import AssignMachine from '../components/AssignMachine';
+import Link from 'next/link';
 
 export default function Home() {
   const {
@@ -73,26 +76,16 @@ export default function Home() {
 
   const addCustomer = async (customerData) => {
     try {
-      // แปลง duration เป็นจำนวนชั่วโมง
-      const totalHours = 
-        Number(customerData.duration.hours || 0) + 
-        Number(customerData.duration.minutes || 0) / 60 + 
-        Number(customerData.duration.seconds || 0) / 3600;
-
-      const queueRef = collection(db, 'queue');
-      await addDoc(queueRef, {
-        name: customerData.name,
-        contact: customerData.contact,
-        duration: totalHours, // เก็บเป็นจำนวนชั่วโมง
-        durationDetails: { // เก็บรายละเอียดแยก
-          hours: Number(customerData.duration.hours || 0),
-          minutes: Number(customerData.duration.minutes || 0),
-          seconds: Number(customerData.duration.seconds || 0)
-        },
-        estimatedTime: customerData.estimatedTime,
-        createdAt: serverTimestamp(),
-        status: 'waiting'
-      });
+      // ตรวจสอบว่า customerData.duration มีค่าหรือไม่
+      if (customerData && typeof customerData.duration === 'undefined') {
+        customerData.duration = 1; // กำหนดค่าเริ่มต้นเป็น 1 ชั่วโมง
+      }
+      
+      // เรียกใช้ฟังก์ชัน addCustomerToQueue จาก firebaseService
+      await addCustomerToQueue(customerData);
+      
+      // อัปเดตข้อมูลหลังจากเพิ่มลูกค้า
+      subscribeToData();
     } catch (error) {
       console.error('Error adding customer:', error);
       throw error;
@@ -232,11 +225,17 @@ export default function Home() {
 
           {/* Right Column */}
           <div className="space-y-8">
+            {machines && (
+              <MachineManagement 
+                machines={machines} 
+                onUpdate={() => subscribeToData()}
+              />
+            )}
             <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
               <AssignMachine
-                queue={queue}
+                queue={queue || []}
                 machines={machines}
-                onAssignCustomer={handleAssignCustomer}
+                onAssign={handleAssignCustomer}
               />
             </div>
           </div>
@@ -247,6 +246,14 @@ export default function Home() {
           onRemove={removeFromQueue}
           onUpdateStatus={updateQueueStatus}
         />
+
+        <div className="mt-8 text-center">
+          <Link href="/customer">
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
+              เข้าสู่ระบบจองเครื่อง
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   );
