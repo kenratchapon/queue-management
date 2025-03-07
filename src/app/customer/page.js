@@ -427,7 +427,9 @@ const CustomerPage = () => {
                             <div key={customer.id} className="bg-gray-700/30 rounded-lg p-3">
                               <div className="flex justify-between items-center">
                                 <div>
-                                  <span className="text-white font-medium">{maskCustomerName(customer.name)}</span>
+                                  <div className="text-xs font-medium text-white truncate">
+                                    {maskCustomerName(customer.name)}
+                                  </div>
                                   <div className="text-xs text-gray-400 mt-1">
                                     {customer.type === 'vip' 
                                       ? 'VIP' 
@@ -484,7 +486,9 @@ const CustomerPage = () => {
                             <div key={customer.id} className="bg-gray-700/30 rounded-lg p-3">
                               <div className="flex justify-between items-center">
                                 <div>
-                                  <span className="text-white font-medium">{maskCustomerName(customer.name)}</span>
+                                  <div className="text-xs font-medium text-white truncate">
+                                    {maskCustomerName(customer.name)}
+                                  </div>
                                   <div className="text-xs text-gray-400 mt-1">
                                     {customer.type === 'vip' 
                                       ? 'VIP' 
@@ -528,7 +532,9 @@ const CustomerPage = () => {
 
             {activeTab === 'timeline' && (
               <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl border border-gray-700/50">
-                <MachineCalendar />
+                <MachineCalendar 
+                  maskCustomerName={maskCustomerName} 
+                />
               </div>
             )}
 
@@ -555,7 +561,10 @@ const CustomerPage = () => {
                           <tr key={customer.id} className="text-sm border-b border-gray-800">
                             <td className="py-3 px-4">{index + 1}</td>
                             <td className="py-3 px-4">
-                              <div className="font-medium text-white">{maskCustomerName(customer.name)}</div>
+                              <div className="font-medium text-white">
+                                {maskCustomerName(customer.name)}
+                              </div>
+                              <div className="text-xs text-gray-400">{customer.type}</div>
                             </td>
                             <td className="py-3 px-4">
                               <span className={`px-2 py-0.5 rounded-full text-xs ${

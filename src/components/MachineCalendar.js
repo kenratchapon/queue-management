@@ -257,6 +257,12 @@ const MachineTimeline = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // นิยามฟังก์ชันโดยตรงในคอมโพเนนต์
+  const maskCustomerName = (name) => {
+    if (!name) return '';
+    return `${name.substring(0, 2)}${'*'.repeat(8)}`;
+  };
+
   return (
     <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl mb-8">
       <div className="flex flex-wrap items-center justify-between mb-4">
@@ -436,11 +442,11 @@ const MachineTimeline = () => {
                             style={position}
                           >
                             <div className="text-xs font-medium text-white truncate">
-                              {machine.currentCustomer.name}
+                              {maskCustomerName(machine.currentCustomer.name)}
                             </div>
                             {/* Tooltip สำหรับแสดงข้อมูลเพิ่มเติม */}
                             <div className="tooltip opacity-0 absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg pointer-events-none transition-opacity duration-200 z-30">
-                              <div className="font-medium">{machine.currentCustomer.name}</div>
+                              <div className="font-medium">{maskCustomerName(machine.currentCustomer.name)}</div>
                               <div>เริ่ม: {formatDateAndTime(startTime)}</div>
                               <div>สิ้นสุด: {formatDateAndTime(endTime)}</div>
                               <div>ระยะเวลา: {duration} ชั่วโมง</div>
@@ -467,11 +473,11 @@ const MachineTimeline = () => {
                                 style={position}
                               >
                                 <div className="text-xs font-medium text-white truncate">
-                                  {item.customer}
+                                  {maskCustomerName(item.customer)}
                                 </div>
                                 {/* Tooltip */}
                                 <div className="tooltip opacity-0 absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg pointer-events-none transition-opacity duration-200 z-30">
-                                  <div className="font-medium">{item.customer}</div>
+                                  <div className="font-medium">{maskCustomerName(item.customer)}</div>
                                   <div>เริ่ม: {formatDateAndTime(item.startTime)}</div>
                                   <div>สิ้นสุด: {formatDateAndTime(item.endTime)}</div>
                                   <div>รอ: {item.waitTime} นาที</div>
@@ -517,7 +523,9 @@ const MachineTimeline = () => {
                     <tr key={item.customerId} className="text-sm">
                       <td className="py-2 px-4">{index + 1}</td>
                       <td className="py-2 px-4">
-                        <div className="font-medium text-white">{item.customer}</div>
+                        <div className="font-medium text-white">
+                          {maskCustomerName(item.customer)}
+                        </div>
                         <div className="text-xs text-gray-400">
                           {item.type === 'vip' 
                             ? 'VIP' 
@@ -635,11 +643,11 @@ const MachineTimeline = () => {
                             style={position}
                           >
                             <div className="text-xs font-medium text-white truncate">
-                              {machine.currentCustomer.name}
+                              {maskCustomerName(machine.currentCustomer.name)}
                             </div>
                             {/* Tooltip สำหรับแสดงข้อมูลเพิ่มเติม */}
                             <div className="tooltip opacity-0 absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg pointer-events-none transition-opacity duration-200 z-30">
-                              <div className="font-medium">{machine.currentCustomer.name}</div>
+                              <div className="font-medium">{maskCustomerName(machine.currentCustomer.name)}</div>
                               <div>เริ่ม: {formatDateAndTime(startTime)}</div>
                               <div>สิ้นสุด: {formatDateAndTime(endTime)}</div>
                               <div>ระยะเวลา: {duration} ชั่วโมง</div>
@@ -666,11 +674,11 @@ const MachineTimeline = () => {
                                 style={position}
                               >
                                 <div className="text-xs font-medium text-white truncate">
-                                  {item.customer}
+                                  {maskCustomerName(item.customer)}
                                 </div>
                                 {/* Tooltip */}
                                 <div className="tooltip opacity-0 absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg pointer-events-none transition-opacity duration-200 z-30">
-                                  <div className="font-medium">{item.customer}</div>
+                                  <div className="font-medium">{maskCustomerName(item.customer)}</div>
                                   <div>เริ่ม: {formatDateAndTime(item.startTime)}</div>
                                   <div>สิ้นสุด: {formatDateAndTime(item.endTime)}</div>
                                   <div>รอ: {item.waitTime} นาที</div>
@@ -716,7 +724,9 @@ const MachineTimeline = () => {
                     <tr key={item.customerId} className="text-sm">
                       <td className="py-2 px-4">{index + 1}</td>
                       <td className="py-2 px-4">
-                        <div className="font-medium text-white">{item.customer}</div>
+                        <div className="font-medium text-white">
+                          {maskCustomerName(item.customer)}
+                        </div>
                         <div className="text-xs text-gray-400">
                           {item.type === 'vip' 
                             ? 'VIP' 
